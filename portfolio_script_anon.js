@@ -2,11 +2,11 @@
 
 (function(){
 if(app.documents.length === 0){
-alert("XXXPORTFOLIOXXX_STR");
+alert("ドキュメントを開いてから実行してください。");
 return;
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// === 記事定義 ===
 var articles = [
 {id: "001", name: "XXXPORTFOLIOXXX_STR", func: process_001, enabled: true},
 {id: "002", name: "XXXPORTFOLIOXXX_STR", func: process_002, enabled: true},
@@ -26,13 +26,13 @@ var articles = [
 {id: "016", name: "XXXPORTFOLIOXXX_STR", func: process_016, enabled: true}
 ];
 
-// XXXPORTFOLIOXXX_COMMENT
-var dialog = new Window("dialog", "XXXPORTFOLIOXXX_STR");
+// === UI作成 ===
+var dialog = new Window("dialog", "原稿処理 v2.0");
 dialog.orientation = "column";
 dialog.alignChildren = ["fill", "top"];
 dialog.preferredSize = [550, 850];
 
-// XXXPORTFOLIOXXX_COMMENT
+// === タイトルエリア ===
 var titleGroup = dialog.add("group");
 titleGroup.orientation = "column";
 titleGroup.alignChildren = "center";
@@ -40,21 +40,21 @@ titleGroup.alignChildren = "center";
 var titleText = titleGroup.add("statictext", undefined, "XXXPORTFOLIOXXX_STR");
 titleText.graphics.font = ScriptUI.newFont(titleText.graphics.font.name, "BOLD", 14);
 
-// XXXPORTFOLIOXXX_COMMENT
-var excludePanel = dialog.add("panel", undefined, "XXXPORTFOLIOXXX_STR");
+// === 除外条件パネル ===
+var excludePanel = dialog.add("panel", undefined, "除外条件（全記事共通）");
 excludePanel.orientation = "column";
 excludePanel.alignChildren = "left";
 excludePanel.margins = 15;
 
 var excludeInfo = excludePanel.add("statictext", undefined,
-"XXXPORTFOLIOXXX_STR",
+"以下の箇所は処理から自動的に除外されます：",
 {multiline: true}
 );
 excludeInfo.preferredSize = [500, 20];
 
-var checkLocked = excludePanel.add("checkbox", undefined, "XXXPORTFOLIOXXX_STR");
-var checkMaster = excludePanel.add("checkbox", undefined, "XXXPORTFOLIOXXX_STR");
-var checkEditing = excludePanel.add("checkbox", undefined, "XXXPORTFOLIOXXX_STR");
+var checkLocked = excludePanel.add("checkbox", undefined, "☑ ロックされたオブジェクト・レイヤー");
+var checkMaster = excludePanel.add("checkbox", undefined, "☑ マスタページ上のフレーム");
+var checkEditing = excludePanel.add("checkbox", undefined, "☑ 編集中のフレーム（カーソルがある）");
 
 checkLocked.value = true;
 checkMaster.value = true;
@@ -66,8 +66,8 @@ checkEditing.enabled = false;
 
 // XXXPORTFOLIOXXX_COMMENT
 var hintText = excludePanel.add("statictext", undefined,
-"XXXPORTFOLIOXXX_STR" +
-"XXXPORTFOLIOXXX_STR",
+"💡 処理対象：新規配置したテキストフレームのみ\n" +
+" 除外対象：ロック済み、マスター上、編集中のフレーム",
 {multiline: true}
 );
 hintText.preferredSize = [500, 35];
@@ -77,13 +77,13 @@ hintText.graphics.PenType.SOLID_COLOR,
 1
 );
 
-// XXXPORTFOLIOXXX_COMMENT
-var articlesPanel = dialog.add("panel", undefined, "XXXPORTFOLIOXXX_STR");
+// === 記事選択パネル ===
+var articlesPanel = dialog.add("panel", undefined, "処理する記事を選択");
 articlesPanel.orientation = "column";
 articlesPanel.alignChildren = ["fill", "top"];
 articlesPanel.maximumSize = [530, 450];
 
-// XXXPORTFOLIOXXX_COMMENT
+// スクロール可能なグループ
 var scrollGroup = articlesPanel.add("group");
 scrollGroup.orientation = "column";
 scrollGroup.alignChildren = "left";
@@ -104,17 +104,17 @@ divider.margins = [0, 5, 0, 5];
 }
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// 実行/キャンセルボタン
 var actionGroup = dialog.add("group");
 actionGroup.orientation = "row";
 actionGroup.spacing = 10;
-var btnOK = actionGroup.add("button", undefined, "XXXPORTFOLIOXXX_STR", {name: "ok"});
-var btnCancel = actionGroup.add("button", undefined, "XXXPORTFOLIOXXX_STR", {name: "cancel"});
+var btnOK = actionGroup.add("button", undefined, "実行", {name: "ok"});
+var btnCancel = actionGroup.add("button", undefined, "キャンセル", {name: "cancel"});
 
 btnOK.preferredSize = [150, 35];
 btnCancel.preferredSize = [150, 35];
 
-// XXXPORTFOLIOXXX_COMMENT
+// ダイアログ表示と処理実行
 if(dialog.show() == 1){
 var selectedArticles = [];
 for(var i = 0; i < checkboxes.length; i++){
@@ -124,32 +124,32 @@ selectedArticles.push(articles[i]);
 }
 
 if(selectedArticles.length === 0){
-alert("XXXPORTFOLIOXXX_STR");
+alert("記事が選択されていません。");
 return;
 }
 
 executeProcessing(selectedArticles);
 }
 
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
+// ========================================
+// 処理実行（除外機能付き）
+// ========================================
 function executeProcessing(selectedArticles){
 var doc = app.activeDocument;
 var results = [];
 
-// XXXPORTFOLIOXXX_COMMENT
+// === 除外対象フレームの収集 ===
 var excludeFrames = collectExcludeFrames(doc);
 
-// XXXPORTFOLIOXXX_COMMENT
+// 除外対象がある場合は確認
 if(excludeFrames.total > 0){
-var confirmMsg = "XXXPORTFOLIOXXX_STR";
-confirmMsg += "XXXPORTFOLIOXXX_STR";
-confirmMsg += "XXXPORTFOLIOXXX_STR" + excludeFrames.locked + "XXXPORTFOLIOXXX_STR";
-confirmMsg += "XXXPORTFOLIOXXX_STR" + excludeFrames.master + "XXXPORTFOLIOXXX_STR";
-confirmMsg += "XXXPORTFOLIOXXX_STR" + excludeFrames.editing + "XXXPORTFOLIOXXX_STR";
-confirmMsg += "XXXPORTFOLIOXXX_STR" + excludeFrames.total + "XXXPORTFOLIOXXX_STR";
-confirmMsg += "XXXPORTFOLIOXXX_STR";
+var confirmMsg = "【処理対象の確認】\n\n";
+confirmMsg += "除外されるフレーム:\n";
+confirmMsg += " ・ロック: " + excludeFrames.locked + " 個\n";
+confirmMsg += " ・マスター: " + excludeFrames.master + " 個\n";
+confirmMsg += " ・編集中: " + excludeFrames.editing + " 個\n";
+confirmMsg += " 計: " + excludeFrames.total + " 個\n\n";
+confirmMsg += "これらを除外して処理を実行しますか？";
 
 if(!confirm(confirmMsg)){
 return;
@@ -157,56 +157,56 @@ return;
 }
 
 app.doScript(function(){
-// XXXPORTFOLIOXXX_COMMENT
+// === 除外対象を一時的に保護 ===
 var tempLocked = applyTemporaryLock(excludeFrames.frames);
 
 try {
-// XXXPORTFOLIOXXX_COMMENT
+// === 選択された記事の処理 ===
 for(var i = 0; i < selectedArticles.length; i++){
 try {
 var result = selectedArticles[i].func(doc);
-results.push("XXXPORTFOLIOXXX_STR" + selectedArticles[i].name + ": " + result);
+results.push("✓ " + selectedArticles[i].name + ": " + result);
 } catch(e){
-results.push("XXXPORTFOLIOXXX_STR" + selectedArticles[i].name + "XXXPORTFOLIOXXX_STR" + e.message);
+results.push("✗ " + selectedArticles[i].name + ": エラー - " + e.message);
 }
 }
 } finally {
-// XXXPORTFOLIOXXX_COMMENT
+// === 保護を解除 ===
 restoreOriginalLock(tempLocked);
 }
 
 }, ScriptLanguage.JAVASCRIPT, undefined,
-UndoModes.ENTIRE_SCRIPT, "XXXPORTFOLIOXXX_STR");
+UndoModes.ENTIRE_SCRIPT, "小冊子原稿処理");
 
-// XXXPORTFOLIOXXX_COMMENT
+// === 結果表示 ===
 showResults(results, excludeFrames);
 }
 
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
+// ========================================
+// 除外対象フレームの収集
+// ========================================
 function collectExcludeFrames(doc){
 var frames = [];
 var counts = {locked: 0, master: 0, editing: 0, total: 0};
 
-// XXXPORTFOLIOXXX_COMMENT
+// 編集中のフレームを取得
 var editingFrame = getEditingFrame();
 
-// XXXPORTFOLIOXXX_COMMENT
+// 全ページを走査
 for(var i = 0; i < doc.pages.length; i++){
 var page = doc.pages[i];
 
-// XXXPORTFOLIOXXX_COMMENT
+// テキストフレーム
 for(var j = 0; j < page.textFrames.length; j++){
 var frame = page.textFrames[j];
 var reason = null;
 
-// XXXPORTFOLIOXXX_COMMENT
+// ロック判定
 if(frame.locked || frame.itemLayer.locked){
 reason = "locked";
 counts.locked++;
 }
-// XXXPORTFOLIOXXX_COMMENT
+// マスタページ判定（修正）
 else {
 try {
 if(frame.parent.constructor.name === "MasterSpread"){
@@ -216,7 +216,7 @@ counts.master++;
 } catch(e) {}
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// 編集中判定
 if(!reason && editingFrame && frame === editingFrame){
 reason = "editing";
 counts.editing++;
@@ -229,7 +229,7 @@ counts.total++;
 }
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// マスタページ上のフレームも走査
 for(var i = 0; i < doc.masterSpreads.length; i++){
 var spread = doc.masterSpreads[i];
 
@@ -255,9 +255,9 @@ total: counts.total
 };
 }
 
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
+// ========================================
+// 編集中のフレームを取得
+// ========================================
 function getEditingFrame(){
 try {
 if(app.selection.length === 0){
@@ -266,13 +266,13 @@ return null;
 
 var sel = app.selection[0];
 
-// XXXPORTFOLIOXXX_COMMENT
+// テキスト選択またはカーソル位置
 if(sel.hasOwnProperty("parentTextFrames") &&
 sel.parentTextFrames.length > 0){
 return sel.parentTextFrames[0];
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// テキストフレーム自体が選択されている場合
 if(sel.constructor.name === "TextFrame"){
 return sel;
 }
@@ -281,16 +281,16 @@ return sel;
 return null;
 }
 
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
+// ========================================
+// 一時的にロック
+// ========================================
 function applyTemporaryLock(frameInfos){
 var locked = [];
 
 for(var i = 0; i < frameInfos.length; i++){
 var info = frameInfos[i];
 
-// XXXPORTFOLIOXXX_COMMENT
+// すべての除外対象フレームをロック
 try {
 if(!info.frame.locked){
 info.frame.locked = true;
@@ -302,9 +302,9 @@ locked.push(info);
 return locked;
 }
 
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
+// ========================================
+// ロックを元に戻す
+// ========================================
 function restoreOriginalLock(tempLocked){
 for(var i = 0; i < tempLocked.length; i++){
 try {
@@ -313,35 +313,35 @@ tempLocked[i].frame.locked = false;
 }
 }
 
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
+// ========================================
+// 結果表示
+// ========================================
 function showResults(results, excludeInfo){
-var resultWin = new Window("dialog", "XXXPORTFOLIOXXX_STR");
+var resultWin = new Window("dialog", "処理完了");
 resultWin.orientation = "column";
 resultWin.alignChildren = ["fill", "top"];
 resultWin.preferredSize = [550, 450];
 
-// XXXPORTFOLIOXXX_COMMENT
-var excludePanel = resultWin.add("panel", undefined, "XXXPORTFOLIOXXX_STR");
+// 除外情報
+var excludePanel = resultWin.add("panel", undefined, "除外されたフレーム");
 excludePanel.orientation = "column";
 excludePanel.alignChildren = "left";
 excludePanel.margins = 10;
 
 var excludeText = excludePanel.add("statictext", undefined,
-"XXXPORTFOLIOXXX_STR" + excludeInfo.total + "XXXPORTFOLIOXXX_STR",
+"除外したフレーム数（ロック/マスター/編集中）: " + excludeInfo.total + " 個",
 {multiline: true}
 );
 excludeText.preferredSize = [520, 20];
 excludeText.graphics.font = ScriptUI.newFont(excludeText.graphics.font.name, "BOLD", 12);
 
 var excludeDetail = excludePanel.add("statictext", undefined,
-"XXXPORTFOLIOXXX_STR" + excludeInfo.locked + "XXXPORTFOLIOXXX_STR" + excludeInfo.master + "XXXPORTFOLIOXXX_STR" + excludeInfo.editing + "XXXPORTFOLIOXXX_STR"
+"（ロック: " + excludeInfo.locked + " / マスター: " + excludeInfo.master + " / 編集中: " + excludeInfo.editing + "）"
 );
 excludeDetail.preferredSize = [520, 20];
 
-// XXXPORTFOLIOXXX_COMMENT
-var resultPanel = resultWin.add("panel", undefined, "XXXPORTFOLIOXXX_STR");
+// 実行結果
+var resultPanel = resultWin.add("panel", undefined, "実行結果");
 resultPanel.orientation = "column";
 resultPanel.alignChildren = ["fill", "top"];
 
@@ -351,14 +351,14 @@ results.join("\n"),
 );
 resultText.preferredSize = [530, 300];
 
-var btnClose = resultWin.add("button", undefined, "XXXPORTFOLIOXXX_STR", {name: "ok"});
+var btnClose = resultWin.add("button", undefined, "閉じる", {name: "ok"});
 btnClose.preferredSize = [150, 35];
 
 resultWin.show();
 }
 
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
+// === 個別処理関数===
+// "A. "　------------------------------------------------------------------------------------
 
 function process_001(doc){
 var results = [];
@@ -378,8 +378,8 @@ var count2 = replaceText(doc, "[", "XXXPORTFOLIOXXX_STR");
 var count3 = replaceText(doc, "]", "XXXPORTFOLIOXXX_STR");
 results.push("XXXPORTFOLIOXXX_STR" + (count2 + count3) + "XXXPORTFOLIOXXX_STR");
 
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
+// 3. 文字種変換（全角英数字→半角英数字）
+// ただし、特定のパターンは除外（確認付き）
 if(confirm(
 "XXXPORTFOLIOXXX_STR" +
 "XXXPORTFOLIOXXX_STR" +
@@ -391,26 +391,26 @@ if(confirm(
 "XXXPORTFOLIOXXX_STR"
 )){
 var count4 = convertToHalfWidthExcludingPatterns(doc);
-results.push("XXXPORTFOLIOXXX_STR" + count4 + "XXXPORTFOLIOXXX_STR");
+results.push("半角変換: " + count4 + "箇所");
 } else {
-results.push("XXXPORTFOLIOXXX_STR");
+results.push("半角変換: スキップ");
 }
 
 // XXXPORTFOLIOXXX_COMMENT
 if(confirm("XXXPORTFOLIOXXX_STR")){
 var count5 = replaceSpacesToTab(doc);
-results.push("XXXPORTFOLIOXXX_STR" + count5 + "XXXPORTFOLIOXXX_STR");
+results.push("スペース→タブ: " + count5 + "箇所");
 }
 
 // XXXPORTFOLIOXXX_COMMENT
 if(confirm("XXXPORTFOLIOXXX_STR")){
 var count6 = applyCharStyleToNombre(doc);
-results.push("XXXPORTFOLIOXXX_STR" + count6 + "XXXPORTFOLIOXXX_STR");
+results.push("ノンブル処理: " + count6 + "箇所");
 }
 
 // XXXPORTFOLIOXXX_COMMENT
 var count7 = applyCharStyleToSpecificText(doc);
-results.push("XXXPORTFOLIOXXX_STR" + count7 + "XXXPORTFOLIOXXX_STR");
+results.push("文字スタイル適用: " + count7 + "箇所");
 
 return results.join(" / ");
 
@@ -419,13 +419,13 @@ throw new Error("XXXPORTFOLIOXXX_STR" + e.message);
 }
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// === 補助関数群 ===
 
-// XXXPORTFOLIOXXX_COMMENT
+// 段落スタイルを全体に適用
 function applyParagraphStyleToAll(doc, styleName){
 var style = doc.paragraphStyles.itemByName(styleName);
 if(!style.isValid){
-throw new Error("XXXPORTFOLIOXXX_STR" + styleName + "XXXPORTFOLIOXXX_STR");
+throw new Error("段落スタイル「" + styleName + "」が見つかりません");
 }
 
 for(var i = 0; i < doc.stories.length; i++){
@@ -433,7 +433,7 @@ doc.stories[i].paragraphs.everyItem().applyParagraphStyle(style, true);
 }
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// テキスト検索置換
 function replaceText(doc, findText, replaceText){
 app.findTextPreferences = NothingEnum.nothing;
 app.changeTextPreferences = NothingEnum.nothing;
@@ -449,11 +449,11 @@ app.changeTextPreferences = NothingEnum.nothing;
 return found.length;
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// 検索置換してスタイル適用
 function replaceAndApplyStyle(doc, findText, replaceText, styleName){
 var style = doc.paragraphStyles.itemByName(styleName);
 if(!style.isValid){
-throw new Error("XXXPORTFOLIOXXX_STR" + styleName + "XXXPORTFOLIOXXX_STR");
+throw new Error("段落スタイル「" + styleName + "」が見つかりません");
 }
 
 app.findTextPreferences = NothingEnum.nothing;
@@ -471,11 +471,11 @@ app.changeTextPreferences = NothingEnum.nothing;
 return found.length;
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// 全角英数字→半角英数字（特定パターン除外）
 function convertToHalfWidthExcludingPatterns(doc){
 var count = 0;
 
-// XXXPORTFOLIOXXX_COMMENT
+// 除外パターンを先にマーク
 var excludePatterns = [
 "XXXPORTFOLIOXXX_STR",
 "XXXPORTFOLIOXXX_STR",
@@ -483,15 +483,15 @@ var excludePatterns = [
 "XXXPORTFOLIOXXX_STR"
 ];
 
-// XXXPORTFOLIOXXX_COMMENT
-var fullWidthDigits = "XXXPORTFOLIOXXX_STR";
+// 全角数字のマッピング
+var fullWidthDigits = "０１２３４５６７８９";
 var halfWidthDigits = "0123456789";
 
 for(var i = 0; i < doc.stories.length; i++){
 var story = doc.stories[i];
 var text = story.contents;
 
-// XXXPORTFOLIOXXX_COMMENT
+// 除外パターンにマッチする箇所を保護
 var protectedRanges = [];
 for(var j = 0; j < excludePatterns.length; j++){
 var regex = new RegExp(excludePatterns[j], "g");
@@ -501,7 +501,7 @@ protectedRanges.push({start: match.index, end: match.index + match[0].length});
 }
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// 全角数字を半角に変換（保護範囲以外）
 for(var pos = 0; pos < text.length; pos++){
 var isProtected = false;
 for(var k = 0; k < protectedRanges.length; k++){
@@ -604,9 +604,9 @@ pos = text.indexOf(searchText, pos + 1);
 return count;
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// "A." 終了--------------------------------------------------------------------------------
 
-// XXXPORTFOLIOXXX_COMMENT
+// "B. "　------------------------------------------------------------------------------------
 
 function process_002(doc){
 var results = [];
@@ -647,9 +647,9 @@ return results.join(" / ");
 throw new Error("XXXPORTFOLIOXXX_STR" + e.message);
 }
 }
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
-function process_003(doc){
+// "B." 終了------------------------------------------------------------------------------------
+// "C." ------------------------------------------------------------------------------------
+function process_seishinshu(doc){
 var results = [];
 
 try {
@@ -661,17 +661,17 @@ if(!style.isValid){
 throw new Error("XXXPORTFOLIOXXX_STR" + styleName + "XXXPORTFOLIOXXX_STR");
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// 本文全体に適用（マスターページを除外）
 var storyCount = 0;
 for(var i = 0; i < doc.stories.length; i++){
 var story = doc.stories[i];
 
-// XXXPORTFOLIOXXX_COMMENT
+// マスターページのストーリーは除外
 try {
 if(story.textContainers.length > 0){
 var firstFrame = story.textContainers[0];
 if(firstFrame.parent.constructor.name === "MasterSpread"){
-continue; // XXXPORTFOLIOXXX_COMMENT
+continue; // マスターページはスキップ
 }
 }
 } catch(e) {}
@@ -679,7 +679,7 @@ continue; // XXXPORTFOLIOXXX_COMMENT
 story.paragraphs.everyItem().applyParagraphStyle(style, true);
 storyCount++;
 }
-results.push("XXXPORTFOLIOXXX_STR" + storyCount + "XXXPORTFOLIOXXX_STR");
+results.push("段落スタイル適用: " + storyCount + "ストーリー");
 
 // XXXPORTFOLIOXXX_COMMENT
 if(confirm("XXXPORTFOLIOXXX_STR" +
@@ -697,7 +697,7 @@ doc,
 
 results.push(result.message);
 } else {
-results.push("XXXPORTFOLIOXXX_STR");
+results.push("全角スペース検出: スキップ");
 }
 
 return results.join(" / ");
@@ -717,17 +717,17 @@ app.changeGrepPreferences = NothingEnum.nothing;
 app.findGrepPreferences.findWhat = findPattern;
 app.changeGrepPreferences.changeTo = replacePattern;
 
-// XXXPORTFOLIOXXX_COMMENT
+// マスターページなどの基本除外設定
 app.findChangeGrepOptions.includeLockedLayersForFind = false;
 app.findChangeGrepOptions.includeLockedStoriesForFind = false;
 app.findChangeGrepOptions.includeHiddenLayers = false;
 app.findChangeGrepOptions.includeMasterPages = false;
 
-// XXXPORTFOLIOXXX_COMMENT
+// 検索実行
 var foundItems = doc.findGrep();
 
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
+// ★ ロックされたテキストフレーム内のヒットを除外 ★
+// （統合スクリプト側で「編集中フレーム」は一時的に locked = true にされている）
 var filtered = [];
 for (var i = 0; i < foundItems.length; i++) {
 var it = foundItems[i];
@@ -739,7 +739,7 @@ tf = it.parentTextFrames[0];
 }
 } catch (e) {}
 
-// XXXPORTFOLIOXXX_COMMENT
+// ロックされたフレーム内ならスキップ
 if (tf && tf.locked) {
 continue;
 }
@@ -752,32 +752,32 @@ app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 return {
 processed: 0,
-message: description + "XXXPORTFOLIOXXX_STR"
+message: description + ": 該当なし"
 };
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// ★ 一括置換実行（1件ずつ確認なし） ★
 var processedCount = 0;
 for (var i = 0; i < filtered.length; i++) {
 try {
 filtered[i].changeGrep();
 processedCount++;
 } catch (e) {
-// XXXPORTFOLIOXXX_COMMENT
+// 個別の置換に失敗しても続行
 }
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// 検索設定をクリア
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
 return {
 processed: processedCount,
-message: description + "XXXPORTFOLIOXXX_STR" + processedCount + "XXXPORTFOLIOXXX_STR"
+message: description + ": 置換 " + processedCount + " 件"
 };
 }
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
+// "C." 終了------------------------------------------------------------------------------------
+// "D." ------------------------------------------------------------------------------------
 
 function process_004(doc){
 var results = [];
@@ -791,7 +791,7 @@ if(!style.isValid){
 throw new Error("XXXPORTFOLIOXXX_STR" + styleName + "XXXPORTFOLIOXXX_STR");
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// 本文全体に適用
 var storyCount = 0;
 for(var i = 0; i < doc.stories.length; i++){
 doc.stories[i].paragraphs.everyItem().applyParagraphStyle(style, true);
@@ -848,7 +848,7 @@ if(confirm(
 var digitConversionCount = convertFullWidthDigits(doc);
 results.push("XXXPORTFOLIOXXX_STR" + digitConversionCount.total + "XXXPORTFOLIOXXX_STR" + digitConversionCount.three + "XXXPORTFOLIOXXX_STR" + digitConversionCount.four + ")");
 } else {
-results.push("XXXPORTFOLIOXXX_STR");
+results.push("全角数字変換: スキップ");
 }
 
 return results.join(" / ");
@@ -858,12 +858,12 @@ throw new Error("XXXPORTFOLIOXXX_STR" + e.message);
 }
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// 全角数字→半角数字変換（2桁以上）+ 文字スタイル適用
 function convertFullWidthDigits(doc){
 var counts = {total: 0, three: 0, four: 0};
 
-// XXXPORTFOLIOXXX_COMMENT
-var fullWidthDigits = "XXXPORTFOLIOXXX_STR";
+// 全角数字のマッピング
+var fullWidthDigits = "０１２３４５６７８９";
 var halfWidthDigits = "0123456789";
 
 // XXXPORTFOLIOXXX_COMMENT
@@ -910,7 +910,7 @@ app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// 2桁数字の処理（スタイル適用なし）
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
@@ -930,7 +930,7 @@ app.changeGrepPreferences = NothingEnum.nothing;
 return counts;
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// 全角数字→半角数字変換のヘルパー関数
 function convertDigitsToHalfWidth(text, fullWidthDigits, halfWidthDigits){
 var result = "";
 for(var i = 0; i < text.length; i++){
@@ -944,14 +944,14 @@ result += ch;
 }
 return result;
 }
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
+// "D. 終了------------------------------------------------------------------------------------
+// "E. " ------------------------------------------------------------------------------------
 
 function process_005(doc){
 var results = [];
 
 try {
-// XXXPORTFOLIOXXX_COMMENT
+// 1. 改ページを削除
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
@@ -964,7 +964,7 @@ results.push("XXXPORTFOLIOXXX_STR" + found1.length + "XXXPORTFOLIOXXX_STR");
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
-// XXXPORTFOLIOXXX_COMMENT
+// 2. ページ(上/下)を削除
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
@@ -977,7 +977,7 @@ results.push("XXXPORTFOLIOXXX_STR" + found2.length + "XXXPORTFOLIOXXX_STR");
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
-// XXXPORTFOLIOXXX_COMMENT
+// 3. 1個以上ある改行を1個に
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
@@ -1001,18 +1001,18 @@ doc.stories[i].paragraphs.everyItem().applyParagraphStyle(style02, true);
 }
 results.push("XXXPORTFOLIOXXX_STR");
 
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
+// ========================================
+// 5. 全角パーレンを検索→報告する
+// ========================================
 app.findGrepPreferences = NothingEnum.nothing;
 app.findGrepPreferences.findWhat = "XXXPORTFOLIOXXX_STR";
 
 var foundParen = doc.findGrep();
 if(foundParen.length > 0){
-alert("XXXPORTFOLIOXXX_STR" + foundParen.length + "XXXPORTFOLIOXXX_STR");
-results.push("XXXPORTFOLIOXXX_STR" + foundParen.length + "XXXPORTFOLIOXXX_STR");
+alert("全角パーレン「（」が " + foundParen.length + " 箇所見つかりました。\n手動で確認してください。");
+results.push("全角パーレン検出: " + foundParen.length + "箇所（要確認）");
 } else {
-results.push("XXXPORTFOLIOXXX_STR");
+results.push("全角パーレン検出: なし");
 }
 
 app.findGrepPreferences = NothingEnum.nothing;
@@ -1039,7 +1039,7 @@ if(!titleStyle.isValid){
 throw new Error("XXXPORTFOLIOXXX_STR");
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// ✅ 修正：全角スペース（U+3000）を正しく指定
 app.findGrepPreferences.findWhat = "^(.*?)(\\x{3000}{3})(.*?)(\\x{3000}{3})";
 app.changeGrepPreferences.changeTo = "$1\\t$3\\t";
 app.changeGrepPreferences.appliedParagraphStyle = titleStyle;
@@ -1077,15 +1077,15 @@ throw new Error("XXXPORTFOLIOXXX_STR" + e.message);
 }
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// "E. 終了------------------------------------------------------------------------------------
 
-// XXXPORTFOLIOXXX_COMMENT
+// "F. " ------------------------------------------------------------------------------------
 
 function process_006(doc){
 var results = [];
 
 try {
-// XXXPORTFOLIOXXX_COMMENT
+// 1. 改ページを削除
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
@@ -1098,7 +1098,7 @@ results.push("XXXPORTFOLIOXXX_STR" + found1.length + "XXXPORTFOLIOXXX_STR");
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
-// XXXPORTFOLIOXXX_COMMENT
+// 3. ページ(上/下)を削除
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
@@ -1111,7 +1111,7 @@ results.push("XXXPORTFOLIOXXX_STR" + found2.length + "XXXPORTFOLIOXXX_STR");
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
-// XXXPORTFOLIOXXX_COMMENT
+// 4. 1個以上ある改行を1個に
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
@@ -1182,14 +1182,14 @@ return results.join(" / ");
 throw new Error("XXXPORTFOLIOXXX_STR" + e.message);
 }
 }
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
+// "F. 終了------------------------------------------------------------------------------------
+// "G. " ------------------------------------------------------------------------------------
 
 function process_007(doc){
 var results = [];
 
 try {
-// XXXPORTFOLIOXXX_COMMENT
+// 1. 改ページを削除
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
@@ -1202,7 +1202,7 @@ results.push("XXXPORTFOLIOXXX_STR" + found1.length + "XXXPORTFOLIOXXX_STR");
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
-// XXXPORTFOLIOXXX_COMMENT
+// 2. ページ(上/下)を削除
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
@@ -1215,7 +1215,7 @@ results.push("XXXPORTFOLIOXXX_STR" + found2.length + "XXXPORTFOLIOXXX_STR");
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
-// XXXPORTFOLIOXXX_COMMENT
+// 3. 1個以上ある改行を1個に
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
@@ -1352,15 +1352,15 @@ app.changeTextPreferences = NothingEnum.nothing;
 
 return count;
 }
-// XXXPORTFOLIOXXX_COMMENT
+// "G. 終了------------------------------------------------------------------------------------
 
-// XXXPORTFOLIOXXX_COMMENT
+// "H. " ------------------------------------------------------------------------------------
 
 function process_008(doc){
 var results = [];
 
 try {
-// XXXPORTFOLIOXXX_COMMENT
+// 1. 改ページを削除
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
@@ -1373,7 +1373,7 @@ results.push("XXXPORTFOLIOXXX_STR" + found1.length + "XXXPORTFOLIOXXX_STR");
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
-// XXXPORTFOLIOXXX_COMMENT
+// 2. ページ(上/下)を削除
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
@@ -1386,7 +1386,7 @@ results.push("XXXPORTFOLIOXXX_STR" + found2.length + "XXXPORTFOLIOXXX_STR");
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
-// XXXPORTFOLIOXXX_COMMENT
+// 3. 1個以上ある改行を1個に
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
@@ -1399,7 +1399,7 @@ results.push("XXXPORTFOLIOXXX_STR" + found3.length + "XXXPORTFOLIOXXX_STR");
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
-// XXXPORTFOLIOXXX_COMMENT
+// 4. 行頭の全角アキを削除
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
@@ -1466,8 +1466,8 @@ throw new Error("XXXPORTFOLIOXXX_STR" + e.message);
 }
 }
 
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
+// "H. 終了------------------------------------------------------------------------------------
+// "I." ------------------------------------------------------------------------------------
 
 function process_009(doc){
 var results = [];
@@ -1489,7 +1489,7 @@ storyCount++;
 }
 results.push("XXXPORTFOLIOXXX_STR" + storyCount + "XXXPORTFOLIOXXX_STR");
 
-// XXXPORTFOLIOXXX_COMMENT
+// 2. 検索置換【テキスト】検索対象:ストーリー
 
 // XXXPORTFOLIOXXX_COMMENT
 app.findTextPreferences = NothingEnum.nothing;
@@ -1563,8 +1563,8 @@ throw new Error("XXXPORTFOLIOXXX_STR" + e.message);
 }
 }
 
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
+// "I. 終了------------------------------------------------------------------------------------
+// "J. " ------------------------------------------------------------------------------------
 
 function process_010(doc){
 var results = [];
@@ -1601,7 +1601,7 @@ results.push("XXXPORTFOLIOXXX_STR" + found1.length + "XXXPORTFOLIOXXX_STR");
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
-// XXXPORTFOLIOXXX_COMMENT
+// 2-2. 行頭または行末の1個以上の全角アキを削除
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
@@ -1614,7 +1614,7 @@ results.push("XXXPORTFOLIOXXX_STR" + found2.length + "XXXPORTFOLIOXXX_STR");
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
-// XXXPORTFOLIOXXX_COMMENT
+// 2-3. 行頭からいちばんはじめにある2つ以上の全角アキをタブに
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
@@ -1647,14 +1647,14 @@ throw new Error("XXXPORTFOLIOXXX_STR" + e.message);
 }
 }
 
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
+// "J. 終了------------------------------------------------------------------------------------
+// "K. " ------------------------------------------------------------------------------------
 
 function process_011(doc){
 var results = [];
 
 try {
-// XXXPORTFOLIOXXX_COMMENT
+// 1. 改ページを削除
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
@@ -1667,7 +1667,7 @@ results.push("XXXPORTFOLIOXXX_STR" + found1.length + "XXXPORTFOLIOXXX_STR");
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
-// XXXPORTFOLIOXXX_COMMENT
+// 2. ページ(上/下)を削除
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
@@ -1680,7 +1680,7 @@ results.push("XXXPORTFOLIOXXX_STR" + found2.length + "XXXPORTFOLIOXXX_STR");
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
-// XXXPORTFOLIOXXX_COMMENT
+// 3. 1個以上ある改行を1個に
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
@@ -1693,7 +1693,7 @@ results.push("XXXPORTFOLIOXXX_STR" + found3.length + "XXXPORTFOLIOXXX_STR");
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
-// XXXPORTFOLIOXXX_COMMENT
+// 4. 全角パーレンを検索→報告する
 app.findGrepPreferences = NothingEnum.nothing;
 app.findGrepPreferences.findWhat = "XXXPORTFOLIOXXX_STR";
 
@@ -1816,8 +1816,8 @@ app.changeTextPreferences = NothingEnum.nothing;
 
 return count;
 }
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
+// "K.  終了------------------------------------------------------------------------------------
+// "L. " ------------------------------------------------------------------------------------
 
 function process_012(doc){
 var results = [];
@@ -1835,9 +1835,9 @@ throw new Error("XXXPORTFOLIOXXX_STR" + styleName + "XXXPORTFOLIOXXX_STR");
 for(var i = 0; i < doc.stories.length; i++){
 doc.stories[i].paragraphs.everyItem().applyParagraphStyle(style, true);
 }
-results.push("XXXPORTFOLIOXXX_STR");
+results.push("段落スタイル適用完了");
 
-// XXXPORTFOLIOXXX_COMMENT
+// 2. 検索置換【正規表現】検索対象:ストーリー
 
 // XXXPORTFOLIOXXX_COMMENT
 app.findGrepPreferences = NothingEnum.nothing;
@@ -1852,7 +1852,7 @@ results.push("XXXPORTFOLIOXXX_STR" + found1.length + "XXXPORTFOLIOXXX_STR");
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
-// XXXPORTFOLIOXXX_COMMENT
+// 2-2. 1個以上ある改行を1個に
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
@@ -1895,8 +1895,8 @@ return results.join(" / ");
 throw new Error("XXXPORTFOLIOXXX_STR" + e.message);
 }
 }
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
+// "L.  終了------------------------------------------------------------------------------------
+// "M. " ------------------------------------------------------------------------------------
 
 function process_013(doc){
 var results = [];
@@ -1915,7 +1915,7 @@ doc.stories[i].paragraphs.everyItem().applyParagraphStyle(style, true);
 }
 results.push("XXXPORTFOLIOXXX_STR");
 
-// XXXPORTFOLIOXXX_COMMENT
+// 2. 検索置換【正規表現】検索対象:ストーリー
 
 // XXXPORTFOLIOXXX_COMMENT
 app.findGrepPreferences = NothingEnum.nothing;
@@ -1943,7 +1943,7 @@ results.push("XXXPORTFOLIOXXX_STR" + found2.length + "XXXPORTFOLIOXXX_STR");
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
-// XXXPORTFOLIOXXX_COMMENT
+// 2-3. 1個以上ある改行を1個に
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
@@ -2044,8 +2044,8 @@ return results.join(" / ");
 throw new Error("XXXPORTFOLIOXXX_STR" + e.message);
 }
 }
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
+// "M. 終了------------------------------------------------------------------------------------
+// "N. " ------------------------------------------------------------------------------------
 
 function process_014(doc){
 var results = [];
@@ -2062,9 +2062,9 @@ throw new Error("XXXPORTFOLIOXXX_STR" + styleName + "XXXPORTFOLIOXXX_STR");
 for(var i = 0; i < doc.stories.length; i++){
 doc.stories[i].paragraphs.everyItem().applyParagraphStyle(style, true);
 }
-results.push("XXXPORTFOLIOXXX_STR");
+results.push("段落スタイル適用完了");
 
-// XXXPORTFOLIOXXX_COMMENT
+// 2. 検索置換【正規表現】検索対象:ストーリー
 
 // XXXPORTFOLIOXXX_COMMENT
 app.findGrepPreferences = NothingEnum.nothing;
@@ -2092,7 +2092,7 @@ results.push("XXXPORTFOLIOXXX_STR" + found2.length + "XXXPORTFOLIOXXX_STR");
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
-// XXXPORTFOLIOXXX_COMMENT
+// 2-3. 1個以上ある改行を1個に
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
@@ -2226,7 +2226,7 @@ results.push("XXXPORTFOLIOXXX_STR" + found7.length + "XXXPORTFOLIOXXX_STR");
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
-// XXXPORTFOLIOXXX_COMMENT
+// 4. 検索置換【文字種変換】検索対象: ストーリー
 
 // XXXPORTFOLIOXXX_COMMENT
 if(confirm("XXXPORTFOLIOXXX_STR")){
@@ -2262,22 +2262,22 @@ throw new Error("XXXPORTFOLIOXXX_STR" + e.message);
 }
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// 全角文字を半角に変換
 function convertToHalfWidth_1(text){
 var result = "";
 for(var i = 0; i < text.length; i++){
 var c = text.charAt(i);
 var code = text.charCodeAt(i);
 
-// XXXPORTFOLIOXXX_COMMENT
+// 全角数字（０-９）→ 半角数字（0-9）
 if(code >= 0xFF10 && code <= 0xFF19){
 result += String.fromCharCode(code - 0xFEE0);
 }
-// XXXPORTFOLIOXXX_COMMENT
+// 全角英大文字（Ａ-Ｚ）→ 半角英大文字（A-Z）
 else if(code >= 0xFF21 && code <= 0xFF3A){
 result += String.fromCharCode(code - 0xFEE0);
 }
-// XXXPORTFOLIOXXX_COMMENT
+// 全角英小文字（ａ-ｚ）→ 半角英小文字（a-z）
 else if(code >= 0xFF41 && code <= 0xFF5A){
 result += String.fromCharCode(code - 0xFEE0);
 } else {
@@ -2286,8 +2286,8 @@ result += c;
 }
 return result;
 }
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
+// "N. 終了------------------------------------------------------------------------------------
+// "O. " ------------------------------------------------------------------------------------
 
 function process_015(doc){
 var results = [];
@@ -2304,7 +2304,7 @@ throw new Error("XXXPORTFOLIOXXX_STR" + styleName + "XXXPORTFOLIOXXX_STR");
 for(var i = 0; i < doc.stories.length; i++){
 doc.stories[i].paragraphs.everyItem().applyParagraphStyle(style, true);
 }
-results.push("XXXPORTFOLIOXXX_STR");
+results.push("段落スタイル適用完了");
 
 // XXXPORTFOLIOXXX_COMMENT
 // XXXPORTFOLIOXXX_COMMENT
@@ -2327,7 +2327,7 @@ app.changeGrepPreferences = NothingEnum.nothing;
 }
 // XXXPORTFOLIOXXX_COMMENT
 
-// XXXPORTFOLIOXXX_COMMENT
+// 3. 検索置換【正規表現】検索対象:ストーリー
 
 // XXXPORTFOLIOXXX_COMMENT
 if(confirm("XXXPORTFOLIOXXX_STR")){
@@ -2363,7 +2363,7 @@ app.changeGrepPreferences = NothingEnum.nothing;
 results.push("XXXPORTFOLIOXXX_STR");
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// 4. 検索置換【文字種変換】検索対象: ストーリー
 
 // XXXPORTFOLIOXXX_COMMENT
 if(confirm("XXXPORTFOLIOXXX_STR")){
@@ -2400,22 +2400,22 @@ throw new Error("XXXPORTFOLIOXXX_STR" + e.message);
 }
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// 全角文字を半角に変換
 function convertToHalfWidth_2(text){
 var result = "";
 for(var i = 0; i < text.length; i++){
 var c = text.charAt(i);
 var code = text.charCodeAt(i);
 
-// XXXPORTFOLIOXXX_COMMENT
+// 全角数字（０-９）→ 半角数字（0-9）
 if(code >= 0xFF10 && code <= 0xFF19){
 result += String.fromCharCode(code - 0xFEE0);
 }
-// XXXPORTFOLIOXXX_COMMENT
+// 全角英大文字（Ａ-Ｚ）→ 半角英大文字（A-Z）
 else if(code >= 0xFF21 && code <= 0xFF3A){
 result += String.fromCharCode(code - 0xFEE0);
 }
-// XXXPORTFOLIOXXX_COMMENT
+// 全角英小文字（ａ-ｚ）→ 半角英小文字（a-z）
 else if(code >= 0xFF41 && code <= 0xFF5A){
 result += String.fromCharCode(code - 0xFEE0);
 } else {
@@ -2424,8 +2424,8 @@ result += c;
 }
 return result;
 }
-// XXXPORTFOLIOXXX_COMMENT
-// XXXPORTFOLIOXXX_COMMENT
+// "O. 終了------------------------------------------------------------------------------------
+// "P. " ------------------------------------------------------------------------------------
 
 function process_016(doc){
 var results = [];
@@ -2442,11 +2442,11 @@ throw new Error("XXXPORTFOLIOXXX_STR" + styleName + "XXXPORTFOLIOXXX_STR");
 for(var i = 0; i < doc.stories.length; i++){
 doc.stories[i].paragraphs.everyItem().applyParagraphStyle(style, true);
 }
-results.push("XXXPORTFOLIOXXX_STR");
+results.push("段落スタイル適用完了");
 
-// XXXPORTFOLIOXXX_COMMENT
+// 2. 検索置換【正規表現】検索対象:ストーリー
 
-// XXXPORTFOLIOXXX_COMMENT
+// 2-1. 1個以上ある改行を1個に
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 
@@ -2454,7 +2454,7 @@ app.findGrepPreferences.findWhat = "\\r+";
 app.changeGrepPreferences.changeTo = "\\r";
 
 var found1 = doc.changeGrep();
-results.push("XXXPORTFOLIOXXX_STR" + found1.length + "XXXPORTFOLIOXXX_STR");
+results.push("改行統一: " + found1.length + "箇所");
 
 app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
@@ -2489,7 +2489,7 @@ app.findGrepPreferences = NothingEnum.nothing;
 app.changeGrepPreferences = NothingEnum.nothing;
 // XXXPORTFOLIOXXX_COMMENT
 
-// XXXPORTFOLIOXXX_COMMENT
+// 3. 検索置換【文字種変換】検索対象: ストーリー
 
 // XXXPORTFOLIOXXX_COMMENT
 if(confirm("XXXPORTFOLIOXXX_STR")){
@@ -2549,22 +2549,22 @@ throw new Error("XXXPORTFOLIOXXX_STR" + e.message);
 }
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// 全角文字を半角に変換
 function convertToHalfWidth_3(text){
 var result = "";
 for(var i = 0; i < text.length; i++){
 var c = text.charAt(i);
 var code = text.charCodeAt(i);
 
-// XXXPORTFOLIOXXX_COMMENT
+// 全角数字（０-９）→ 半角数字（0-9）
 if(code >= 0xFF10 && code <= 0xFF19){
 result += String.fromCharCode(code - 0xFEE0);
 }
-// XXXPORTFOLIOXXX_COMMENT
+// 全角英大文字（Ａ-Ｚ）→ 半角英大文字（A-Z）
 else if(code >= 0xFF21 && code <= 0xFF3A){
 result += String.fromCharCode(code - 0xFEE0);
 }
-// XXXPORTFOLIOXXX_COMMENT
+// 全角英小文字（ａ-ｚ）→ 半角英小文字（a-z）
 else if(code >= 0xFF41 && code <= 0xFF5A){
 result += String.fromCharCode(code - 0xFEE0);
 } else {
@@ -2574,8 +2574,7 @@ result += c;
 return result;
 }
 
-// XXXPORTFOLIOXXX_COMMENT
+// "P.終了------------------------------------------------------------------------------------
 
 
 })();
-
